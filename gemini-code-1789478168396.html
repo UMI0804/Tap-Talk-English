@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Pattern Studio - Multi Selector</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #e0e7ff;
+      --bg-slate: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --active-pink: #ec4899;
+      --active-pink-bg: #fce7f3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      background: var(--card-bg);
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    h1 { font-size: 1.2rem; color: var(--primary); font-weight: 800; }
+    
+    .level-tabs {
+      display: flex;
+      gap: 0.3rem;
+    }
+    .tab-btn {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1rem;
+      min-height: calc(100vh - 100px);
+    }
+
+    @media (max-width: 768px) {
+      .app-container { grid-template-columns: 1fr; }
+    }
+
+    .sidebar {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .pattern-item {
+      padding: 0.6rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafafa;
+    }
+    .pattern-item:hover { border-color: var(--primary); background: var(--primary-light); }
+    .pattern-item.active {
+      background: var(--active-pink-bg);
+      border-color: var(--active-pink);
+    }
+    .pattern-unit { font-size: 0.8rem; font-weight: 700; color: var(--primary); }
+    .pattern-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; }
+
+    .main-workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .display-card {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .sentence-output {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+      min-height: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .slot-highlight {
+      color: var(--active-pink);
+      background: var(--active-pink-bg);
+      padding: 0.1rem 0.5rem;
+      border-radius: 0.4rem;
+      border-bottom: 2px solid var(--active-pink);
+    }
+    .translation-output {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+    }
+    .speak-btn {
+      background: var(--active-pink);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.8rem;
+      border-radius: 2rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);
+      transition: transform 0.1s;
+    }
+    .speak-btn:active { transform: scale(0.95); }
+
+    .palette-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .category-card {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+      padding: 0.8rem 1rem;
+    }
+    .category-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .word-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .word-chip {
+      background: var(--bg-slate);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.8rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .word-chip:hover { border-color: var(--primary); background: var(--primary-light); }
+    .word-chip.active {
+      background: var(--active-pink);
+      color: white;
+      border-color: var(--active-pink);
+    }
+    .word-chip .en { font-weight: 700; font-size: 0.9rem; }
+    .word-chip .ja { font-size: 0.7rem; opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>English Pattern Studio</h1>
+    <div class="level-tabs">
+      <button class="tab-btn active" onclick="switchLevel('junior')">📘 中学17単元</button>
+      <button class="tab-btn" onclick="switchLevel('senior')">📙 高校16単元</button>
+      <button class="tab-btn" onclick="switchLevel('daily')">🗣️ 日常8単元</button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <div class="sidebar" id="patternList"></div>
+
+    <div class="main-workspace">
+      <div class="display-card">
+        <div class="sentence-output" id="sentenceDisplay"></div>
+        <div class="translation-output" id="translationDisplay"></div>
+        <button class="speak-btn" onclick="speakCurrentSentence()">🔊 発音を聞く</button>
+      </div>
+
+      <div class="palette-container" id="paletteContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    const database = {
+      // 中学英語（全17単元）
+      junior: [
+        { unit: "1. be動詞", jp: "be動詞の文章", groups: [
+          { name: "主語", words: [{en: "I", ja: "私"}, {en: "She", ja: "彼女"}, {en: "They", ja: "彼ら"}] },
+          { name: "be動詞", words: [{en: "am", ja: "〜です"}, {en: "is", ja: "〜です"}, {en: "are", ja: "〜です"}, {en: "was", ja: "〜だった"}, {en: "were", ja: "〜だった"}] },
+          { name: "補語・場所", words: [{en: "a student", ja: "学生"}, {en: "very happy", ja: "とても幸せ"}, {en: "in Tokyo", ja: "東京にいる"}] }
+        ]},
+        { unit: "2. 一般動詞", jp: "一般動詞の文章", groups: [
+          { name: "主語", words: [{en: "I", ja: "私"}, {en: "He", ja: "彼"}, {en: "We", ja: "私たち"}] },
+          { name: "動詞", words: [{en: "play", ja: "〜をする"}, {en: "plays", ja: "〜をする(3単現)"}, {en: "played", ja: "〜をした"}, {en: "like", ja: "〜が好き"}] },
+          { name: "目的語", words: [{en: "soccer", ja: "サッカー"}, {en: "apples", ja: "りんご"}, {en: "the piano", ja: "ピアノ"}] }
+        ]},
+        { unit: "3. 進行形", jp: "進行形の文章", groups: [
+          { name: "主語", words: [{en: "He", ja: "彼"}, {en: "They", ja: "彼ら"}] },
+          { name: "be動詞", words: [{en: "is", ja: "〜している"}, {en: "are", ja: "〜している"}, {en: "was", ja: "〜していた"}] },
+          { name: "進行形動詞", words: [{en: "running", ja: "走って"}, {en: "studying", ja: "勉強して"}, {en: "cooking", ja: "料理して"}] },
+          { name: "目的語・場所", words: [{en: "English", ja: "英語を"}, {en: "in the park", ja: "公園で"}, {en: "dinner", ja: "夕食を"}] }
+        ]},
+        { unit: "4. 助動詞", jp: "助動詞の文章", groups: [
+          { name: "主語", words: [{en: "You", ja: "あなた"}, {en: "I", ja: "私"}, {en: "We", ja: "私たち"}] },
+          { name: "助動詞", words: [{en: "can", ja: "〜できる"}, {en: "must", ja: "〜しなければならない"}, {en: "should", ja: "〜すべき"}, {en: "may", ja: "〜してもよい"}] },
+          { name: "動詞原形", words: [{en: "speak English", ja: "英語を話す"}, {en: "clean the room", ja: "部屋を掃除する"}, {en: "go home", ja: "帰宅する"}] }
+        ]},
+        { unit: "5. 未来表現", jp: "未来表現の文章", groups: [
+          { name: "主語", words: [{en: "I", ja: "私"}, {en: "She", ja: "彼女"}] },
+          { name: "未来表現", words: [{en: "will", ja: "〜するつもりだ"}, {en: "am going to", ja: "〜する予定だ"}, {en: "is going to", ja: "〜する予定だ"}] },
+          { name: "動詞原形", words: [{en: "visit Kyoto", ja: "京都を訪れる"}, {en: "buy a new car", ja: "車を買う"}, {en: "call you", ja: "電話する"}] }
+        ]},
+        { unit: "6. 名詞・代名詞", jp: "代名詞・指示語の文章", groups: [
+          { name: "動詞/指示語", words: [{en: "This is", ja: "これは〜です"}, {en: "Give", ja: "〜をあげなさい"}, {en: "Those are", ja: "あれらは〜です"}] },
+          { name: "代名詞/所有格", words: [{en: "my book", ja: "私の本"}, {en: "me water", ja: "私にお水"}, {en: "her shoes", ja: "彼女の靴"}] }
+        ]},
+        { unit: "7. 形容詞・副詞", jp: "修飾語の文章", groups: [
+          { name: "主語+動詞", words: [{en: "This movie is", ja: "この映画は〜だ"}, {en: "She runs", ja: "彼女は〜に走る"}] },
+          { name: "度合い", words: [{en: "very", ja: "とても"}, {en: "really", ja: "本当に"}, {en: "quite", ja: "かなり"}] },
+          { name: "形容詞/副詞", words: [{en: "interesting", ja: "おもしろい"}, {en: "fast", ja: "速く"}, {en: "clear", ja: "明快"}] }
+        ]},
+        { unit: "8. 疑問詞", jp: "疑問文の文章", groups: [
+          { name: "疑問詞", words: [{en: "What", ja: "何を"}, {en: "Where", ja: "どこで"}, {en: "Why", ja: "なぜ"}, {en: "How", ja: "どのように"}] },
+          { name: "助動詞", words: [{en: "do you", ja: "あなたは〜しますか"}, {en: "did she", ja: "彼女は〜しましたか"}, {en: "are you", ja: "あなたは〜ですか"}] },
+          { name: "動詞/補語", words: [{en: "want?", ja: "欲しいですか"}, {en: "go yesterday?", ja: "昨日行きましたか"}, {en: "so happy?", ja: "そんなに幸せなんですか"}] }
+        ]},
+        { unit: "9. 命令文・感嘆文", jp: "命令・感嘆の文章", groups: [
+          { name: "頭出し", words: [{en: "Open", ja: "開けなさい"}, {en: "Don't be", ja: "〜になるな"}, {en: "What a", ja: "なんて〜なんだ"}] },
+          { name: "内容", words: [{en: "the window", ja: "窓を"}, {en: "late", ja: "遅れて"}, {en: "nice day!", ja: "良い日なんだ"}] }
+        ]},
+        { unit: "10. 接続詞", jp: "接続詞の文章", groups: [
+          { name: "主節", words: [{en: "I stayed home", ja: "家にいた"}, {en: "Call me", ja: "電話して"}] },
+          { name: "接続詞", words: [{en: "because", ja: "〜なので"}, {en: "when", ja: "〜のとき"}, {en: "if", ja: "もし〜なら"}] },
+          { name: "従属節", words: [{en: "it rained", ja: "雨が降った"}, {en: "you arrive", ja: "到着する"}, {en: "you need help", ja: "助けが必要"}] }
+        ]},
+        { unit: "11. 不定詞", jp: "不定詞の文章", groups: [
+          { name: "主部", words: [{en: "I want", ja: "〜したい"}, {en: "It is easy", ja: "〜するのは簡単だ"}] },
+          { name: "to不定詞", words: [{en: "to study English", ja: "英語を勉強すること"}, {en: "to cook this dish", ja: "この料理を作ること"}, {en: "to wake up early", ja: "早起きすること"}] }
+        ]},
+        { unit: "12. 動名詞", jp: "動名詞の文章", groups: [
+          { name: "主部", words: [{en: "Playing games", ja: "ゲームをすることは"}, {en: "Thank you for", ja: "〜してくれてありがとう"}] },
+          { name: "動名詞句", words: [{en: "is fun", ja: "楽しい"}, {en: "helping me", ja: "手伝って"}] }
+        ]},
+        { unit: "13. 比較", jp: "比較の文章", groups: [
+          { name: "主語+動詞", words: [{en: "Tom is", ja: "トムは〜だ"}, {en: "Tokyo is", ja: "東京は〜だ"}] },
+          { name: "比較級/表現", words: [{en: "as tall as", ja: "〜と同じくらい背が高い"}, {en: "taller than", ja: "〜より背が高い"}, {en: "bigger than", ja: "〜より大きい"}] },
+          { name: "対象", words: [{en: "Ken", ja: "ケン"}, {en: "Osaka", ja: "大阪"}] }
+        ]},
+        { unit: "14. 受動態", jp: "受け身の文章", groups: [
+          { name: "主語", words: [{en: "This book", ja: "この本は"}, {en: "The room", ja: "その部屋は"}] },
+          { name: "be+過去分詞", words: [{en: "was written", ja: "書かれた"}, {en: "is cleaned", ja: "清掃される"}] },
+          { name: "by/代理", words: [{en: "by Soseki", ja: "漱石によって"}, {en: "by my mother", ja: "母によって"}] }
+        ]},
+        { unit: "15. 現在完了形", jp: "現在完了の文章", groups: [
+          { name: "主語+have", words: [{en: "I have", ja: "私は〜"}, {en: "She has", ja: "彼女は〜"}] },
+          { name: "完了/経験/継続", words: [{en: "already finished", ja: "すでに終わらせた"}, {en: "visited Paris", ja: "パリを訪れたことがある"}, {en: "lived here", ja: "ここに住んでいる"}] },
+          { name: "補足", words: [{en: "my homework", ja: "宿題を"}, {en: "twice", ja: "2回"}, {en: "for five years", ja: "5年間"}] }
+        ]},
+        { unit: "16. 関係代名詞", jp: "関係代名詞の文章", groups: [
+          { name: "先行詞", words: [{en: "I have a friend", ja: "友達がいる(人)"}, {en: "This is the car", ja: "車だ(物)"}] },
+          { name: "関係代名詞", words: [{en: "who", ja: "人(主格)"}, {en: "which", ja: "物(主格/目的格)"}, {en: "that", ja: "人・物"}] },
+          { name: "後続節", words: [{en: "lives in Canada", ja: "カナダに住んでいる"}, {en: "my father bought", ja: "父が買った"}] }
+        ]},
+        { unit: "17. 後置修飾", jp: "分詞などの修飾表現", groups: [
+          { name: "名詞/主語", words: [{en: "The girl", ja: "その女の子は"}, {en: "The picture", ja: "その写真は"}] },
+          { name: "修飾語句", words: [{en: "singing on stage", ja: "ステージで歌っている"}, {en: "taken by Tom", ja: "トムに撮られた"}] },
+          { name: "述語動詞", words: [{en: "is my sister", ja: "私の妹です"}, {en: "is beautiful", ja: "美しいです"}] }
+        ]}
+      ],
+
+      // 高校英語（全16単元）
+      senior: [
+        { unit: "1. 文型と動詞", jp: "SV, SVC, SVO, SVOO, SVOC", groups: [
+          { name: "主語", words: [{en: "The news", ja: "そのニュースは"}, {en: "My parent", ja: "親は"}] },
+          { name: "動詞", words: [{en: "made", ja: "〜にさせた(SVOC)"}, {en: "bought", ja: "〜を買ってくれた(SVOO)"}, {en: "remained", ja: "〜のままだった(SVC)"}] },
+          { name: "目的語/補語", words: [{en: "me happy", ja: "私を幸せに"}, {en: "me a new watch", ja: "私に腕時計を"}, {en: "silent", ja: "静かな状態で"}] }
+        ]},
+        { unit: "2. 複雑な時制", jp: "完了進行形・未来完了", groups: [
+          { name: "主語", words: [{en: "He", ja: "彼"}, {en: "By next year, I", ja: "来年までに私は"}] },
+          { name: "複雑な時制", words: [{en: "has been studying", ja: "ずっと勉強し続けている"}, {en: "will have graduated", ja: "卒業しているだろう"}] },
+          { name: "目的語/修飾語", words: [{en: "for three hours", ja: "3時間も"}, {en: "from university", ja: "大学を"}] }
+        ]},
+        { unit: "3. 助動詞の応用", jp: "助動詞+have+過去分詞", groups: [
+          { name: "主語", words: [{en: "You", ja: "あなた"}, {en: "He", ja: "彼"}] },
+          { name: "助動詞複合形", words: [{en: "should have locked", ja: "鍵をかけるべきだった"}, {en: "must have missed", ja: "乗り遅れたに違いない"}, {en: "cannot have said", ja: "言ったはずがない"}] },
+          { name: "目的語", words: [{en: "the door", ja: "ドアに"}, {en: "the train", ja: "電車に"}, {en: "such a thing", ja: "そんなことを"}] }
+        ]},
+        { unit: "4. 受動態の応用", jp: "SVOC/句動詞の受動態", groups: [
+          { name: "主語", words: [{en: "The baby", ja: "その赤ちゃんは"}, {en: "He", ja: "彼は"}] },
+          { name: "受動態句", words: [{en: "was named", ja: "名付けられた"}, {en: "was spoken to", ja: "話しかけられた"}] },
+          { name: "補語/代理", words: [{en: "Jack by them", ja: "彼らにジャックと"}, {en: "by a stranger", ja: "見知らぬ人に"}] }
+        ]},
+        { unit: "5. 不定詞の応用", jp: "完了不定詞・be to構文", groups: [
+          { name: "主語+動詞", words: [{en: "She seems", ja: "彼女は〜と思われる"}, {en: "The meeting is", ja: "会議は〜だ"}] },
+          { name: "応用不定詞", words: [{en: "to have been ill", ja: "病気だった"}, {en: "to be held tomorrow", ja: "明日開催される予定"}] }
+        ]},
+        { unit: "6. 動名詞の応用", jp: "意味上の主語・慣用表現", groups: [
+          { name: "頭出し/構文", words: [{en: "I insist on", ja: "〜を主張する"}, {en: "It goes without", ja: "〜は言うまでもない"}] },
+          { name: "動名詞句", words: [{en: "his attending the meeting", ja: "彼が会議に出席することを"}, {en: "saying that health is wealth", ja: "健康は財産だということ"}] }
+        ]},
+        { unit: "7. 感情の分詞", jp: "感情を表す分詞表現", groups: [
+          { name: "主語+動詞", words: [{en: "The game was very", ja: "試合はとても〜だった"}, {en: "All the audience felt", ja: "全観客が〜と感じた"}] },
+          { name: "分詞形容詞", words: [{en: "exciting", ja: "わくわくさせる物だ"}, {en: "excited", ja: "興奮させられた"}] }
+        ]},
+        { unit: "8. 分詞構文", jp: "分詞構文・付帯状況", groups: [
+          { name: "分詞節", words: [{en: "Seeing the police,", ja: "警察を見て、"}, {en: "Weather permitting,", ja: "天気が許せば、"}] },
+          { name: "主節", words: [{en: "the thief ran away", ja: "泥棒は逃げ出した"}, {en: "we will go on a picnic", ja: "ピクニックに行く予定だ"}] }
+        ]},
+        { unit: "9. 関係詞の応用", jp: "非制限用法・what・関係副詞", groups: [
+          { name: "先行詞/主部", words: [{en: "He bought a house,", ja: "家を買ったのだが(非制限)"}, {en: "This is", ja: "これが〜だ"}] },
+          { name: "関係詞節", words: [{en: "which cost a lot", ja: "それはとても高かった"}, {en: "what I was looking for", ja: "私が探していたもの"}] }
+        ]},
+        { unit: "10. 仮定法", jp: "仮定法過去・過去完了", groups: [
+          { name: "If節/願望", words: [{en: "If I knew his address,", ja: "住所を知っていれば(過去)"}, {en: "If I had studied harder,", ja: "勉強していれば(過去完了)"}] },
+          { name: "帰結節", words: [{en: "I would write to him", ja: "手紙を書くのに"}, {en: "I would have passed", ja: "合格していただろうに"}] }
+        ]},
+        { unit: "11. 比較の応用", jp: "the + 比較級 などの構文", groups: [
+          { name: "比較構文前部", words: [{en: "The more you read,", ja: "読めば読むほど"}] },
+          { name: "比較構文後部", words: [{en: "the more you learn", ja: "ますます知識が増える"}] }
+        ]},
+        { unit: "12. 否定表現", jp: "部分否定・準否定", groups: [
+          { name: "否定表現", words: [{en: "Not all students", ja: "全生徒が〜とは限らない(部分)"}, {en: "He hardly ever", ja: "彼はめったに〜ない(準否定)"}] },
+          { name: "動詞句", words: [{en: "passed the exam", ja: "試験に受かった"}, {en: "complains", ja: "不平を言う"}] }
+        ]},
+        { unit: "13. 強調・倒置", jp: "強調構文 It is... that / 倒置", groups: [
+          { name: "強調/倒置構文", words: [{en: "It was yesterday that", ja: "〜したのは昨日だった"}, {en: "Little did I", ja: "〜とは少しも思わなかった"}] },
+          { name: "主要部", words: [{en: "I met her in the park", ja: "公園で彼女に会ったのは"}, {en: "dream of seeing him here", ja: "ここで彼に会うことを"}] }
+        ]},
+        { unit: "14. 無生物主語構文", jp: "無生物主語", groups: [
+          { name: "無生物主語", words: [{en: "Heavy rain", ja: "激しい雨によって"}, {en: "This shortcut", ja: "この近道を使えば"}] },
+          { name: "動詞+目的語", words: [{en: "prevented us from going", ja: "私たちは行くのを阻まれた"}, {en: "will save you ten minutes", ja: "10分節約できる"}] }
+        ]},
+        { unit: "15. 話法", jp: "間接話法", groups: [
+          { name: "伝達部", words: [{en: "He told me that", ja: "彼は私に〜と言った"}, {en: "She asked me if", ja: "彼女は私に〜かと尋ねた"}] },
+          { name: "被伝達部", words: [{en: "he was busy then", ja: "その時忙しいと"}, {en: "I knew the answer", ja: "答えを知っているかどうか"}] }
+        ]},
+        { unit: "16. 複合接続詞", jp: "so that ... / 時制の一致", groups: [
+          { name: "主部", words: [{en: "Either you or I", ja: "あなたか私のどちらかが"}, {en: "I bought it so that", ja: "〜できるようにそれを買った"}] },
+          { name: "述部/目的節", words: [{en: "am to blame", ja: "責められるべきだ"}, {en: "I could study English", ja: "英語を勉強"}] }
+        ]}
+      ],
+
+      // 日常英会話（全8単元）
+      daily: [
+        { unit: "1. 挨拶・近況", jp: "近況を尋ねる", groups: [
+          { name: "切り出し", words: [{en: "How is it", ja: "調子はどう"}, {en: "What have you been", ja: "最近どう"}] },
+          { name: "述部", words: [{en: "going with you?", ja: "ですか？"}, {en: "up to lately?", ja: "過ごしていましたか？"}] }
+        ]},
+        { unit: "2. レストラン", jp: "注文の表現", groups: [
+          { name: "依頼", words: [{en: "Can I get", ja: "〜をもらえますか"}, {en: "I'd like to have", ja: "〜を注文したいです"}] },
+          { name: "品名", words: [{en: "an iced coffee,", ja: "アイスコーヒーを"}, {en: "the daily special,", ja: "日替わりランチを"}] },
+          { name: "追加条件", words: [{en: "with oat milk?", ja: "オーツミルク追加で"}, {en: "to go, please.", ja: "テイクアウトで"}] }
+        ]},
+        { unit: "3. 買い物", jp: "店内での会話", groups: [
+          { name: "質問", words: [{en: "Do you have this in", ja: "これの〜はありますか"}, {en: "Where can I find", ja: "〜はどこにありますか"}] },
+          { name: "詳細", words: [{en: "a smaller size?", ja: "より小さいサイズ"}, {en: "the fitting room?", ja: "試着室"}] }
+        ]},
+        { unit: "4. 道案内・トラブル", jp: "道を聞く・困った時", groups: [
+          { name: "頭出し", words: [{en: "Excuse me, how do I get to", ja: "すみません、〜へはどう行けばいいですか"}, {en: "I seem to have lost", ja: "〜をなくしたようです"}] },
+          { name: "対象", words: [{en: "the nearest station?", ja: "最寄り駅"}, {en: "my passport.", ja: "パスポート"}] }
+        ]},
+        { unit: "5. 意見・感想", jp: "自分の考えを述べる", groups: [
+          { name: "前置き", words: [{en: "In my opinion,", ja: "私の意見では"}, {en: "To be honest,", ja: "正直なところ"}] },
+          { name: "内容", words: [{en: "this choice is better.", ja: "この選択が良い"}, {en: "I'm not a big fan of it.", ja: "あまり好きではない"}] }
+        ]},
+        { unit: "6. 提案・お誘い", jp: "提案する", groups: [
+          { name: "誘い文句", words: [{en: "Why don't we", ja: "〜しませんか"}, {en: "How about", ja: "〜はいかがですか"}] },
+          { name: "行動", words: [{en: "grab a bite to eat?", ja: "軽く食べにいく"}, {en: "taking a short break?", ja: "少し休憩する"}] }
+        ]},
+        { unit: "7. 感謝・謝罪", jp: "感謝と謝罪", groups: [
+          { name: "表現", words: [{en: "I really appreciate", ja: "心から感謝します"}, {en: "I'm so sorry for", ja: "〜について大変申し訳ない"}] },
+          { name: "対象", words: [{en: "your help.", ja: "あなたの助けに"}, {en: "keeping you waiting.", ja: "待たせてしまって"}] }
+        ]},
+        { unit: "8. ビジネス・メール", jp: "仕事での表現", groups: [
+          { name: "定型句", words: [{en: "Thank you for", ja: "〜をありがとうございます"}, {en: "Please let me know if", ja: "〜でしたらお知らせください"}] },
+          { name: "内容", words: [{en: "your quick reply.", ja: "迅速な返信"}, {en: "you have any questions.", ja: "何か質問がある場合"}] }
+        ]}
+      ]
+    };
+
+    let currentLevel = 'junior';
+    let currentPatternIndex = 0;
+    let selectedIndices = [];
+    let availableVoices = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPatterns();
+      initVoices();
+    });
+
+    function initVoices() {
+      if ('speechSynthesis' in window) {
+        const loadVoices = () => {
+          availableVoices = window.speechSynthesis.getVoices();
+        };
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+          speechSynthesis.onvoiceschanged = loadVoices;
+        }
+      }
+    }
+
+    function switchLevel(level) {
+      currentLevel = level;
+      currentPatternIndex = 0;
+      
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', 
+          (level === 'junior' && i === 0) ||
+          (level === 'senior' && i === 1) ||
+          (level === 'daily' && i === 2)
+        );
+      });
+
+      renderPatterns();
+    }
+
+    function renderPatterns() {
+      const listEl = document.getElementById('patternList');
+      listEl.innerHTML = '';
+
+      database[currentLevel].forEach((p, idx) => {
+        const item = document.createElement('div');
+        item.className = `pattern-item ${idx === currentPatternIndex ? 'active' : ''}`;
+        item.onclick = () => selectPattern(idx);
+
+        const unit = document.createElement('div');
+        unit.className = 'pattern-unit';
+        unit.textContent = p.unit;
+
+        const sub = document.createElement('div');
+        sub.className = 'pattern-sub';
+        sub.textContent = p.jp;
+
+        item.appendChild(unit);
+        item.appendChild(sub);
+        listEl.appendChild(item);
+      });
+
+      selectPattern(currentPatternIndex);
+    }
+
+    function selectPattern(index) {
+      currentPatternIndex = index;
+      const data = database[currentLevel][currentPatternIndex];
+      selectedIndices = data.groups.map(() => 0);
+
+      document.querySelectorAll('.pattern-item').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+      });
+
+      renderWorkspace();
+    }
+
+    function selectWord(groupIndex, wordIndex) {
+      selectedIndices[groupIndex] = wordIndex;
+      renderWorkspace();
+    }
+
+    function renderWorkspace() {
+      const activeData = database[currentLevel][currentPatternIndex];
+      
+      let fullSentenceEn = [];
+      let fullSentenceJp = [];
+
+      activeData.groups.forEach((group, gIdx) => {
+        const selectedWord = group.words[selectedIndices[gIdx]];
+        fullSentenceEn.push(`<span class="slot-highlight">${selectedWord.en}</span>`);
+        fullSentenceJp.push(selectedWord.ja);
+      });
+
+      document.getElementById('sentenceDisplay').innerHTML = fullSentenceEn.join(' ');
+      document.getElementById('translationDisplay').textContent = `意味: ${fullSentenceJp.join(' / ')}`;
+
+      const paletteContainer = document.getElementById('paletteContainer');
+      paletteContainer.innerHTML = '';
+
+      activeData.groups.forEach((group, gIdx) => {
+        const card = document.createElement('div');
+        card.className = 'category-card';
+
+        const title = document.createElement('div');
+        title.className = 'category-title';
+        title.textContent = group.name;
+        card.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'word-grid';
+
+        group.words.forEach((w, wIdx) => {
+          const chip = document.createElement('div');
+          chip.className = `word-chip ${wIdx === selectedIndices[gIdx] ? 'active' : ''}`;
+          chip.onclick = () => selectWord(gIdx, wIdx);
+
+          const en = document.createElement('div');
+          en.className = 'en';
+          en.textContent = w.en;
+
+          const ja = document.createElement('div');
+          ja.className = 'ja';
+          ja.textContent = w.ja;
+
+          chip.appendChild(en);
+          chip.appendChild(ja);
+          grid.appendChild(chip);
+        });
+
+        card.appendChild(grid);
+        paletteContainer.appendChild(card);
+      });
+    }
+
+    function speakCurrentSentence() {
+      const activeData = database[currentLevel][currentPatternIndex];
+      const sentenceText = activeData.groups
+        .map((group, gIdx) => group.words[selectedIndices[gIdx]].en)
+        .join(' ');
+
+      if (!('speechSynthesis' in window)) {
+        alert('お使いのブラウザは音声再生に対応していません。');
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(sentenceText);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+
+      if (availableVoices.length === 0) {
+        availableVoices = window.speechSynthesis.getVoices();
+      }
+
+      const preferredVoice = availableVoices.find(voice => 
+        voice.lang.startsWith('en') && (
+          voice.name.includes('Google') || 
+          voice.name.includes('Natural') || 
+          voice.name.includes('Samantha') || 
+          voice.name.includes('Alex') ||
+          voice.name.includes('Enhanced')
+        )
+      ) || availableVoices.find(voice => voice.lang.startsWith('en'));
+
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
+    }
+  </script>
+</body>
+</html>
