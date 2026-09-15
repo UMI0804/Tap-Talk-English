@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Pattern Lab - 全文法＆日常会話対応版</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-slate: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      padding: 1rem;
+      max-width: 960px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    h1 { font-size: 1.75rem; color: var(--primary); font-weight: 800; }
+    p.subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .level-tabs {
+      display: flex;
+      background: #e2e8f0;
+      padding: 0.25rem;
+      border-radius: 0.5rem;
+      gap: 0.25rem;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border: none;
+      background: transparent;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      font-size: 0.85rem;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .selector-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      background: var(--card-bg);
+      outline: none;
+      font-weight: 600;
+    }
+
+    /* Workspace */
+    .workspace {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border-color);
+    }
+    .workspace-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .sentence-builder {
+      min-height: 70px;
+      border: 2px dashed var(--border-color);
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      background: #fafafa;
+      margin-bottom: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e2e8f0; color: var(--text-main); }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+
+    /* Word Palette */
+    .palette-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .category-card {
+      background: var(--card-bg);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+    }
+    .category-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .word-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    /* Word Chips */
+    .chip {
+      padding: 0.4rem 0.8rem;
+      border-radius: 2rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s, opacity 0.2s;
+      border: 1px solid transparent;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chip:active { transform: scale(0.95); }
+
+    /* Category Colors */
+    .chip-subject { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+    .chip-verb { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .chip-object { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .chip-modifier { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+
+    /* Saved History */
+    .history-section {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      border: 1px solid var(--border-color);
+    }
+    .history-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.8rem;
+      background: var(--bg-slate);
+      border-radius: 0.375rem;
+      font-size: 0.95rem;
+    }
+    .history-item .text { font-weight: 500; }
+    .history-actions { display: flex; gap: 0.25rem; }
+
+    @media (min-width: 640px) {
+      .controls { flex-direction: row; }
+      .level-tabs { width: 420px; }
+      .selector-group { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>English Pattern Lab</h1>
+    <p class="subtitle">中学・高校英文法 ＆ 実用日常英会話対応！パーツをタップして英文を完成させよう</p>
+  </header>
+
+  <div class="controls">
+    <div class="level-tabs">
+      <button class="tab-btn active" id="tabJunior" onclick="switchLevel('junior')">📘 中学英語</button>
+      <button class="tab-btn" id="tabSenior" onclick="switchLevel('senior')">📙 高校英語</button>
+      <button class="tab-btn" id="tabDaily" onclick="switchLevel('daily')">🗣️ 日常会話</button>
+    </div>
+    <div class="selector-group">
+      <select id="patternSelect" onchange="loadPattern()"></select>
+    </div>
+  </div>
+
+  <section class="workspace">
+    <div class="workspace-title">構築中の英文</div>
+    <div class="sentence-builder" id="sentenceBuilder"></div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="speakSentence()">🔊 音声再生</button>
+      <button class="btn btn-secondary" onclick="saveSentence()">💾 履歴に保存</button>
+      <button class="btn btn-danger" onclick="clearBuilder()">🗑️ クリア</button>
+    </div>
+  </section>
+
+  <section class="palette-section" id="paletteSection"></section>
+
+  <section class="history-section">
+    <div class="workspace-title">保存した英文</div>
+    <ul class="history-list" id="historyList"></ul>
+  </section>
+
+  <script>
+    const patterns = {
+      junior: [
+        {
+          name: "1. be動詞 (現在形・過去形)",
+          words: {
+            主語: [{ text: "I", type: "subject" }, { text: "She", type: "subject" }, { text: "They", type: "subject" }],
+            be動詞: [{ text: "am", type: "verb" }, { text: "is", type: "verb" }, { text: "are", type: "verb" }, { text: "was", type: "verb" }, { text: "were", type: "verb" }],
+            補語・場所: [{ text: "a student.", type: "object" }, { text: "happy.", type: "object" }, { text: "in Tokyo yesterday.", type: "modifier" }]
+          }
+        },
+        {
+          name: "2. 一般動詞 (現在形・過去形)",
+          words: {
+            主語: [{ text: "I", type: "subject" }, { text: "He", type: "subject" }, { text: "We", type: "subject" }],
+            動詞: [{ text: "play", type: "verb" }, { text: "plays", type: "verb" }, { text: "played", type: "verb" }, { text: "like", type: "verb" }, { text: "liked", type: "verb" }],
+            目的語・副詞: [{ text: "soccer", type: "object" }, { text: "apples", type: "object" }, { text: "every day.", type: "modifier" }, { text: "last week.", type: "modifier" }]
+          }
+        },
+        {
+          name: "3. 進行形 (現在進行形・過去進行形)",
+          words: {
+            主語: [{ text: "He", type: "subject" }, { text: "They", type: "subject" }],
+            be動詞: [{ text: "is", type: "verb" }, { text: "are", type: "verb" }, { text: "was", type: "verb" }, { text: "were", type: "verb" }],
+            進行形動詞: [{ text: "studying", type: "verb" }, { text: "running", type: "verb" }, { text: "cooking", type: "verb" }],
+            目的語・副詞: [{ text: "English now.", type: "object" }, { text: "in the park.", type: "modifier" }, { text: "dinner then.", type: "object" }]
+          }
+        },
+        {
+          name: "4. 助動詞 (can, will, must, should etc.)",
+          words: {
+            主語: [{ text: "You", type: "subject" }, { text: "I", type: "subject" }, { text: "We", type: "subject" }],
+            助動詞: [{ text: "can", type: "verb" }, { text: "must", type: "verb" }, { text: "should", type: "verb" }, { text: "may", type: "verb" }],
+            原形動詞: [{ text: "speak", type: "verb" }, { text: "clean", type: "verb" }, { text: "go", type: "verb" }],
+            目的語・修飾語: [{ text: "English well.", type: "object" }, { text: "this room.", type: "object" }, { text: "home now.", type: "modifier" }]
+          }
+        },
+        {
+          name: "5. 未来表現 (be going to, will)",
+          words: {
+            主語: [{ text: "I", type: "subject" }, { text: "She", type: "subject" }],
+            未来表現: [{ text: "will", type: "verb" }, { text: "am going to", type: "verb" }, { text: "is going to", type: "verb" }],
+            原形動詞: [{ text: "visit", type: "verb" }, { text: "buy", type: "verb" }, { text: "call", type: "verb" }],
+            目的語・時間: [{ text: "Kyoto", type: "object" }, { text: "a new car", type: "object" }, { text: "you tomorrow.", type: "object" }]
+          }
+        },
+        {
+          name: "6. 名詞・代名詞",
+          words: {
+            代名詞/指示詞: [{ text: "This is", type: "subject" }, { text: "Those are", type: "subject" }, { text: "Give", type: "verb" }],
+            目的語/所有格: [{ text: "my book.", type: "object" }, { text: "her shoes.", type: "object" }, { text: "me", type: "object" }, { text: "him", type: "object" }],
+            補足: [{ text: "a piece of paper.", type: "modifier" }]
+          }
+        },
+        {
+          name: "7. 形容詞・副詞",
+          words: {
+            主語+動詞: [{ text: "This movie is", type: "subject" }, { text: "She runs", type: "subject" }],
+            度合い/形容詞: [{ text: "very", type: "modifier" }, { text: "interesting.", type: "object" }, { text: "really", type: "modifier" }, { text: "fast.", type: "modifier" }]
+          }
+        },
+        {
+          name: "8. 疑問詞 (who, what, where, why etc.)",
+          words: {
+            疑問詞: [{ text: "What", type: "subject" }, { text: "Where", type: "modifier" }, { text: "Why", type: "modifier" }, { text: "How", type: "modifier" }],
+            助動詞/be動詞: [{ text: "do you", type: "verb" }, { text: "did she", type: "verb" }, { text: "is the", type: "verb" }, { text: "are you", type: "verb" }],
+            動詞/補語: [{ text: "want?", type: "object" }, { text: "go yesterday?", type: "object" }, { text: "station?", type: "object" }, { text: "so happy?", type: "object" }]
+          }
+        },
+        {
+          name: "9. 命令文・感嘆文",
+          words: {
+            命令/感嘆: [{ text: "Open", type: "verb" }, { text: "Don't", type: "verb" }, { text: "Let's", type: "verb" }, { text: "How", type: "modifier" }, { text: "What a", type: "modifier" }],
+            内容: [{ text: "the window.", type: "object" }, { text: "be late.", type: "object" }, { text: "play soccer!", type: "object" }, { text: "beautiful this view is!", type: "modifier" }, { text: "nice day!", type: "object" }]
+          }
+        },
+        {
+          name: "10. 接続詞 (and, because, when, if)",
+          words: {
+            主節: [{ text: "I stayed home", type: "subject" }, { text: "Call me", type: "verb" }],
+            接続詞: [{ text: "because", type: "modifier" }, { text: "when", type: "modifier" }, { text: "if", type: "modifier" }],
+            従属節: [{ text: "it rained.", type: "object" }, { text: "you arrive.", type: "object" }, { text: "you need help.", type: "object" }]
+          }
+        },
+        {
+          name: "11. 不定詞 (名詞・形容詞・副詞的用法 / 構文)",
+          words: {
+            主語+動詞: [{ text: "I want", type: "subject" }, { text: "I have a lot of work", type: "subject" }, { text: "It is important", type: "subject" }],
+            to不定詞: [{ text: "to study abroad.", type: "verb" }, { text: "to do today.", type: "verb" }, { text: "for us to learn English.", type: "verb" }]
+          }
+        },
+        {
+          name: "12. 動名詞",
+          words: {
+            主語: [{ text: "Playing video games", type: "subject" }, { text: "I enjoyed", type: "subject" }, { text: "Thank you for", type: "subject" }],
+            動詞/動名詞: [{ text: "is fun.", type: "verb" }, { text: "swimming in the sea.", type: "verb" }, { text: "helping me.", type: "verb" }]
+          }
+        },
+        {
+          name: "13. 比較 (原級, 比較級, 最上級)",
+          words: {
+            主語+動詞: [{ text: "Tom is", type: "subject" }, { text: "This hat is", type: "subject" }],
+            比較表現: [{ text: "as tall as", type: "modifier" }, { text: "taller than", type: "modifier" }, { text: "the tallest", type: "modifier" }],
+            対象/範囲: [{ text: "Ken.", type: "object" }, { text: "in his class.", type: "object" }]
+          }
+        },
+        {
+          name: "14. 受動態 (受け身)",
+          words: {
+            主語: [{ text: "This book", type: "subject" }, { text: "The room", type: "subject" }],
+            be動詞+過去分詞: [{ text: "was written", type: "verb" }, { text: "is cleaned", type: "verb" }],
+            by/その他: [{ text: "by Soseki.", type: "modifier" }, { text: "every morning.", type: "modifier" }]
+          }
+        },
+        {
+          name: "15. 現在完了形 (継続・経験・完了)",
+          words: {
+            主語+have/has: [{ text: "I have", type: "subject" }, { text: "She has", type: "subject" }],
+            副詞/過去分詞: [{ text: "lived here", type: "verb" }, { text: "visited Paris", type: "verb" }, { text: "already finished", type: "verb" }],
+            期間・回数: [{ text: "for five years.", type: "modifier" }, { text: "twice.", type: "modifier" }, { text: "her homework.", type: "object" }]
+          }
+        },
+        {
+          name: "16. 関係代名詞 (who, which, that)",
+          words: {
+            先行詞: [{ text: "I have a friend", type: "subject" }, { text: "This is the car", type: "subject" }],
+            関係代名詞: [{ text: "who", type: "modifier" }, { text: "which", type: "modifier" }, { text: "that", type: "modifier" }],
+            後続節: [{ text: "lives in Canada.", type: "verb" }, { text: "my father bought.", type: "verb" }]
+          }
+        },
+        {
+          name: "17. 後置修飾 (分詞・接触節)",
+          words: {
+            主語/名詞: [{ text: "The girl", type: "subject" }, { text: "The picture", type: "subject" }],
+            修飾部分: [{ text: "singing on stage", type: "modifier" }, { text: "taken by Tom", type: "modifier" }],
+            述語動詞: [{ text: "is my sister.", type: "verb" }, { text: "is beautiful.", type: "verb" }]
+          }
+        }
+      ],
+      senior: [
+        {
+          name: "1. 文型と動詞 (SV, SVC, SVO, SVOO, SVOC)",
+          words: {
+            主語: [{ text: "The news", type: "subject" }, { text: "My parent", type: "subject" }],
+            動詞: [{ text: "made", type: "verb" }, { text: "bought", type: "verb" }, { text: "remained", type: "verb" }],
+            目的語/補語: [{ text: "me happy.", type: "object" }, { text: "me a new watch.", type: "object" }, { text: "silent.", type: "modifier" }]
+          }
+        },
+        {
+          name: "2. 時制 (完了進行形・未来完了形・副詞節)",
+          words: {
+            主語: [{ text: "He", type: "subject" }, { text: "By next year, I", type: "subject" }],
+            複雑な時制: [{ text: "has been studying", type: "verb" }, { text: "will have graduated", type: "verb" }],
+            目的語/修飾語: [{ text: "for three hours.", type: "modifier" }, { text: "from university.", type: "object" }]
+          }
+        },
+        {
+          name: "3. 助動詞の応用 (助動詞+have+過去分詞)",
+          words: {
+            主語: [{ text: "You", type: "subject" }, { text: "He", type: "subject" }],
+            助動詞複合形: [{ text: "should have locked", type: "verb" }, { text: "must have missed", type: "verb" }, { text: "cannot have said", type: "verb" }],
+            目的語: [{ text: "the door.", type: "object" }, { text: "the train.", type: "object" }, { text: "such a thing.", type: "object" }]
+          }
+        },
+        {
+          name: "4. 受動態の応用 (SVOCの受動態・句動詞)",
+          words: {
+            主語: [{ text: "The baby", type: "subject" }, { text: "He", type: "subject" }],
+            受動態表現: [{ text: "was named", type: "verb" }, { text: "was spoken to", type: "verb" }],
+            補語/代理: [{ text: "Jack by them.", type: "object" }, { text: "by a stranger.", type: "modifier" }]
+          }
+        },
+        {
+          name: "5. 不定詞の応用 (完了不定詞, be to構文)",
+          words: {
+            主語+動詞: [{ text: "She seems", type: "subject" }, { text: "The meeting is", type: "subject" }],
+            応用不定詞: [{ text: "to have been ill.", type: "verb" }, { text: "to be held tomorrow.", type: "verb" }]
+          }
+        },
+        {
+          name: "6. 動名詞の応用 (意味上の主語・慣用表現)",
+          words: {
+            主部: [{ text: "I insist on", type: "subject" }, { text: "There is no", type: "subject" }, { text: "It goes without", type: "subject" }],
+            動名詞句: [{ text: "his attending the meeting.", type: "verb" }, { text: "denying the fact.", type: "verb" }, { text: "saying that health is wealth.", type: "verb" }]
+          }
+        },
+        {
+          name: "7. 分詞 (感情を表す分詞・叙述用法)",
+          words: {
+            主語+動詞: [{ text: "The game was very", type: "subject" }, { text: "All the audience felt", type: "subject" }],
+            分詞形容詞: [{ text: "exciting.", type: "object" }, { text: "excited.", type: "object" }, { text: "disappointed.", type: "object" }]
+          }
+        },
+        {
+          name: "8. 分詞構文 (基本・独立分詞構文・with付帯)",
+          words: {
+            分詞節/付帯: [{ text: "Seeing the police,", type: "modifier" }, { text: "Weather permitting,", type: "modifier" }, { text: "With his eyes", type: "modifier" }],
+            主節: [{ text: "the thief ran away.", type: "subject" }, { text: "we will go on a picnic.", type: "subject" }, { text: "closed, he listened to music.", type: "subject" }]
+          }
+        },
+        {
+          name: "9. 関係詞 (非制限用法, what, 関係副詞)",
+          words: {
+            主部/先行詞: [{ text: "He bought a house,", type: "subject" }, { text: "This is", type: "subject" }, { text: "This is the city", type: "subject" }],
+            関係詞節: [{ text: "which cost a lot.", type: "modifier" }, { text: "what I was looking for.", type: "object" }, { text: "where I was born.", type: "modifier" }]
+          }
+        },
+        {
+          name: "10. 仮定法 (仮定法過去/過去完了, I wish)",
+          words: {
+            If節/願望: [{ text: "If I knew his address,", type: "subject" }, { text: "If I had studied harder,", type: "subject" }, { text: "I wish I", type: "subject" }],
+            帰結節: [{ text: "I would write to him.", type: "modifier" }, { text: "I would have passed.", type: "modifier" }, { text: "were rich.", type: "modifier" }]
+          }
+        },
+        {
+          name: "11. 比較の応用 (the + 比較級, 慣用表現)",
+          words: {
+            比較構文: [{ text: "The more you read,", type: "modifier" }, { text: "He is no more a doctor", type: "subject" }],
+            帰結/接続: [{ text: "the more you learn.", type: "modifier" }, { text: "than I am.", type: "modifier" }]
+          }
+        },
+        {
+          name: "12. 否定表現 (部分否定・二重否定・準否定)",
+          words: {
+            否定表現: [{ text: "Not all students", type: "subject" }, { text: "He hardly ever", type: "subject" }, { text: "It never rains", type: "subject" }],
+            動詞/結び: [{ text: "passed the exam.", type: "verb" }, { text: "complains.", type: "verb" }, { text: "but it pours.", type: "verb" }]
+          }
+        },
+        {
+          name: "13. 強調・倒置・省略・挿入",
+          words: {
+            強調/倒置: [{ text: "It was yesterday that", type: "modifier" }, { text: "Little did I", type: "modifier" }],
+            主要部: [{ text: "I met her in the park.", type: "subject" }, { text: "dream of seeing him here.", type: "verb" }]
+          }
+        },
+        {
+          name: "14. 名詞構文・無生物主語構文",
+          words: {
+            無生物主語: [{ text: "Heavy rain", type: "subject" }, { text: "This shortcut", type: "subject" }],
+            動詞+目的語: [{ text: "prevented us from going.", type: "verb" }, { text: "will save you ten minutes.", type: "verb" }]
+          }
+        },
+        {
+          name: "15. 話法 (直接話法から間接話法)",
+          words: {
+            伝達部: [{ text: "He told me that", type: "subject" }, { text: "She asked me if", type: "subject" }],
+            被伝達部: [{ text: "he was busy then.", type: "object" }, { text: "I knew the answer.", type: "object" }]
+          }
+        },
+        {
+          name: "16. 一致と前置詞・接続詞 (時制の一致・複合接続詞)",
+          words: {
+            主部: [{ text: "Either you or I", type: "subject" }, { text: "I bought it so that", type: "subject" }],
+            述部/目的節: [{ text: "am to blame.", type: "verb" }, { text: "I could study English.", type: "verb" }]
+          }
+        }
+      ],
+      daily: [
+        {
+          name: "1. 挨拶・近況報告",
+          words: {
+            切り出し: [{ text: "How is it", type: "subject" }, { text: "What have you been", type: "subject" }, { text: "It's nice to", type: "subject" }],
+            述部・補詞: [{ text: "going with you?", type: "verb" }, { text: "up to lately?", type: "verb" }, { text: "finally catch up with you.", type: "verb" }]
+          }
+        },
+        {
+          name: "2. レストラン・カフェでの注文",
+          words: {
+            依頼・注文: [{ text: "Can I get", type: "subject" }, { text: "I'd like to have", type: "subject" }, { text: "Could we get", type: "subject" }],
+            品名: [{ text: "an iced coffee,", type: "object" }, { text: "the daily special,", type: "object" }, { text: "the check,", type: "object" }],
+            条件・追加: [{ text: "with oat milk?", type: "modifier" }, { text: "to go, please.", type: "modifier" }, { text: "whenever you're ready.", type: "modifier" }]
+          }
+        },
+        {
+          name: "3. 買い物・お問合せ",
+          words: {
+            切り出し: [{ text: "Do you have this in", type: "subject" }, { text: "I'm just", type: "subject" }, { text: "Where can I find", type: "subject" }],
+            詳細・目的語: [{ text: "a smaller size?", type: "object" }, { text: "looking around, thanks.", type: "verb" }, { text: "the fitting room?", type: "object" }]
+          }
+        },
+        {
+          name: "4. 道案内・旅行トラブル",
+          words: {
+            質問・助け: [{ text: "Excuse me, how do I get to", type: "subject" }, { text: "Could you show me", type: "subject" }, { text: "I seem to have lost", type: "subject" }],
+            目的地・対象: [{ text: "the nearest station?", type: "object" }, { text: "the way on the map?", type: "object" }, { text: "my passport.", type: "object" }]
+          }
+        },
+        {
+          name: "5. 意見・感想を伝える",
+          words: {
+            意見頭出し: [{ text: "In my opinion,", type: "modifier" }, { text: "It seems to me that", type: "subject" }, { text: "To be honest,", type: "modifier" }],
+            内容: [{ text: "this choice is better.", type: "object" }, { text: "we need more time.", type: "object" }, { text: "I'm not a big fan of it.", type: "object" }]
+          }
+        },
+        {
+          name: "6. 提案・お誘い",
+          words: {
+            提案・誘い: [{ text: "Why don't we", type: "subject" }, { text: "How about", type: "subject" }, { text: "Would you like to", type: "subject" }],
+            行動: [{ text: "grab a bite to eat?", type: "verb" }, { text: "taking a short break?", type: "verb" }, { text: "join us for dinner?", type: "verb" }]
+          }
+        },
+        {
+          name: "7. 感謝・謝罪と返答",
+          words: {
+            感謝・謝罪: [{ text: "I really appreciate", type: "subject" }, { text: "I'm so sorry for", type: "subject" }, { text: "Don't worry about", type: "verb" }],
+            内容・返答: [{ text: "your help.", type: "object" }, { text: "keeping you waiting.", type: "object" }, { text: "it, it's no big deal.", type: "modifier" }]
+          }
+        },
+        {
+          name: "8. オフィス・ビジネスメールの定型表現",
+          words: {
+            定型表現: [{ text: "Thank you for", type: "subject" }, { text: "I am writing to", type: "subject" }, { text: "Please let me know if", type: "subject" }],
+            目的語・節: [{ text: "your quick reply.", type: "object" }, { text: "confirm the meeting schedule.", type: "verb" }, { text: "you have any questions.", type: "object" }]
+          }
+        }
+      ]
+    };
+
+    let currentLevel = 'junior';
+    let selectedWords = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      switchLevel('junior');
+      renderHistory();
+    });
+
+    function switchLevel(level) {
+      currentLevel = level;
+      document.getElementById('tabJunior').classList.toggle('active', level === 'junior');
+      document.getElementById('tabSenior').classList.toggle('active', level === 'senior');
+      document.getElementById('tabDaily').classList.toggle('active', level === 'daily');
+
+      const select = document.getElementById('patternSelect');
+      select.innerHTML = '';
+
+      patterns[level].forEach((p, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = p.name;
+        select.appendChild(opt);
+      });
+
+      loadPattern();
+    }
+
+    function loadPattern() {
+      clearBuilder();
+      const idx = document.getElementById('patternSelect').value;
+      const pattern = patterns[currentLevel][idx];
+      const palette = document.getElementById('paletteSection');
+      palette.innerHTML = '';
+
+      if (!pattern) return;
+
+      for (const [category, words] of Object.entries(pattern.words)) {
+        const card = document.createElement('div');
+        card.className = 'category-card';
+
+        const title = document.createElement('div');
+        title.className = 'category-title';
+        title.textContent = category;
+        card.appendChild(title);
+
+        const chipContainer = document.createElement('div');
+        chipContainer.className = 'word-chips';
+
+        words.forEach(w => {
+          const chip = document.createElement('span');
+          chip.className = `chip chip-${w.type}`;
+          chip.textContent = w.text;
+          chip.onclick = () => addWord(w);
+          chipContainer.appendChild(chip);
+        });
+
+        card.appendChild(chipContainer);
+        palette.appendChild(card);
+      }
+    }
+
+    function addWord(wordObj) {
+      selectedWords.push(wordObj);
+      renderBuilder();
+    }
+
+    function removeWord(index) {
+      selectedWords.splice(index, 1);
+      renderBuilder();
+    }
+
+    function clearBuilder() {
+      selectedWords = [];
+      renderBuilder();
+    }
+
+    function renderBuilder() {
+      const container = document.getElementById('sentenceBuilder');
+      container.innerHTML = '';
+
+      selectedWords.forEach((w, idx) => {
+        const chip = document.createElement('span');
+        chip.className = `chip chip-${w.type}`;
+        chip.textContent = w.text;
+        chip.onclick = () => removeWord(idx);
+        container.appendChild(chip);
+      });
+    }
+
+    function getFullSentence() {
+      return selectedWords.map(w => w.text).join(' ');
+    }
+
+    function speakSentence() {
+      const text = getFullSentence();
+      if (!text) return;
+
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert('お使いのブラウザは音声読み上げに対応していません。');
+      }
+    }
+
+    function saveSentence() {
+      const text = getFullSentence();
+      if (!text) return;
+
+      const history = JSON.parse(localStorage.getItem('epl_history') || '[]');
+      if (!history.includes(text)) {
+        history.unshift(text);
+        localStorage.setItem('epl_history', JSON.stringify(history));
+        renderHistory();
+      }
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      const history = JSON.parse(localStorage.getItem('epl_history') || '[]');
+      list.innerHTML = '';
+
+      if (history.length === 0) {
+        list.innerHTML = '<li style="color:var(--text-muted); font-size:0.85rem;">保存された英文はありません。</li>';
+        return;
+      }
+
+      history.forEach((text, idx) => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+
+        const span = document.createElement('span');
+        span.className = 'text';
+        span.textContent = text;
+
+        const actions = document.createElement('div');
+        actions.className = 'history-actions';
+
+        const playBtn = document.createElement('button');
+        playBtn.className = 'btn btn-secondary';
+        playBtn.style.padding = '0.3rem 0.6rem';
+        playBtn.textContent = '🔊';
+        playBtn.onclick = () => {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'en-US';
+          window.speechSynthesis.speak(u);
+        };
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn btn-danger';
+        delBtn.style.padding = '0.3rem 0.6rem';
+        delBtn.textContent = '✕';
+        delBtn.onclick = () => deleteHistory(idx);
+
+        actions.appendChild(playBtn);
+        actions.appendChild(delBtn);
+        li.appendChild(span);
+        li.appendChild(actions);
+        list.appendChild(li);
+      });
+    }
+
+    function deleteHistory(index) {
+      const history = JSON.parse(localStorage.getItem('epl_history') || '[]');
+      history.splice(index, 1);
+      localStorage.setItem('epl_history', JSON.stringify(history));
+      renderHistory();
+    }
+  </script>
+</body>
+</html>
